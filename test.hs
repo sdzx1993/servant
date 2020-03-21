@@ -7,3 +7,4 @@ myfun :: Int -> Int
 myfun x =  x + 1
 
 fixbug :: Int -> Int
+fixbug x = x
