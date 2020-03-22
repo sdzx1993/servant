@@ -13,7 +13,6 @@ import           Data.List
 import           GHC.Generics
 import           Text.Pretty.Simple         (pPrint)
 
-
 -- validate :: String ->
 -- validate   success  --------- Nothing
 -- validate   fail     --------- Just (faild Reason)

@@ -1,11 +1,7 @@
-import           Control.Concurrent
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Except
-import           Control.Monad.Trans.Maybe
 import           Data.Char
-import           Data.IORef
-import           Data.List
 import           Text.Pretty.Simple         (pPrint)
 
 
@@ -16,7 +12,7 @@ main = print "hello"
 -- validate :: String -> Either (Error ) String
 -- validates [String -> Either (Error ) String]
 
-data Error = E String
+newtype Error = E String
 
 instance Semigroup Error where
   (E a) <> (E b) = E (a ++ b)
@@ -28,7 +24,7 @@ type ES = Either Error String
 
 
 isHaveAnyone :: (Char -> Bool) -> String -> String -> ES
-isHaveAnyone f errorInfo s | any id $ map f s = Right s
+isHaveAnyone f errorInfo s | any f s = Right s
                            | otherwise = Left $ E errorInfo
 
 
@@ -47,17 +43,16 @@ isHaveLessChar st  | length st > 7 && length st < 30 = Right st
 
 
 -- validatePassword :: String -
-validatePassword st = sequence $ map  ( $ st) [isHaveLessChar,isHaveNumber,isHaveUpper,isHaveLower]
+validatePassword st = mapM  ( $ st) [isHaveLessChar,isHaveNumber,isHaveUpper,isHaveLower]
 
 getPassword' :: ExceptT Error IO String
 getPassword' = do
   st <- liftIO getLine
-  case (validatePassword st)  of
+  case validatePassword st  of
     Left (E s) -> do
       liftIO $ pPrint s
       ExceptT $ return $ Left $ E st
-    Right _ -> do
-      ExceptT $ return $ Right st
+    Right _ -> ExceptT $ return $ Right st
 
 getPassword =runExceptT $ msum $ repeat getPassword'
 
