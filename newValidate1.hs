@@ -1,13 +1,17 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 import           Control.Concurrent
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Except
 import           Control.Monad.Trans.Maybe
+import           Data.Aeson                 (FromJSON, ToJSON,encode,decode)
+-- import qualified Data.Aeson                 as A
 import           Data.Char
 import           Data.IORef
 import           Data.List
+import           GHC.Generics
 import           Text.Pretty.Simple         (pPrint)
-
 
 
 -- validate :: String ->
@@ -16,23 +20,23 @@ import           Text.Pretty.Simple         (pPrint)
 -- ValidateResult
 data VR a =
     Success
-  | E a deriving (Show,Eq)
+  | E a deriving (Show,Eq,Generic,FromJSON,ToJSON)
 
 data ErrorType =
     NotHaveNumber
   | NotHaveUpper
   | NotHaveLower
   | CharIsNotEnought Int String
-  deriving (Show,Eq)
+  deriving (Show,Eq,Generic,FromJSON,ToJSON)
 
 
 isSuccess :: VR a -> Bool
 isSuccess Success = True
-isSuccess _ = False
+isSuccess _       = False
 
 vr2str :: VR a -> a
 vr2str Success = error "这不会发生"
-vr2str (E a) = a
+vr2str (E a)   = a
 
 isHaveAnyone :: (Char -> Bool) -> ErrorType -> String -> VR ErrorType
 isHaveAnyone f errorInfo s | any id $ map f s = Success
@@ -60,6 +64,8 @@ getPassword' = do
     Success -> MaybeT $ return $ Just st
     E r -> do
       liftIO $ pPrint r
+      liftIO $ pPrint $ encode r
+      liftIO $ pPrint $ (decode $ encode r :: Maybe [ErrorType])
       MaybeT  $ return $ Nothing
 
 getPassword =runMaybeT $ msum $ repeat getPassword'
