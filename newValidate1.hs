@@ -75,3 +75,7 @@ tmain = do
   password <- getPassword
   print password
 
+tmain2 :: String -> IO ()
+tmain2 s = print s
+
+
